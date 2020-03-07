@@ -10,7 +10,7 @@ ctx.canvas.width  = window.innerWidth;
 ctx.canvas.height = window.innerHeight;
 
 function distance(s1, s2) {
-  return Math.sqrt(Math.pow(s2.x-s1.x, 2) + Math.pow(s2.y-s1.y, 2) + Math.pow(s2.z-s1.z, 2))
+  return Math.sqrt(Math.pow(s2.x-s1.x, 2) + Math.pow(s2.y-s1.y, 2))
 }
 
 function Star(x, y, r) {
@@ -18,7 +18,6 @@ function Star(x, y, r) {
   // NOTE: use percentage value
   this.y = y;
   this.r = r;
-  this.z = 0;
   this.colour = chooseColour(); // random colour
   this.alpha = 0; // start at zero
   this.neighbours = [] // near neighbors
@@ -42,23 +41,29 @@ function chooseColour() {
   return (colours[Math.floor(Math.random()*(colours.length+1))])
 }
 
-
 let stars = []
 
 function populateNeighbours(star) {
 
-  j = Math.floor(Math.random()*(stars.length))
+  //j = Math.floor(Math.random()*(stars.length))
 
-  DIST_LIMIT = 0.3
+  DIST_LIMIT = 0.2;
 
-  // 8 attempts to connect new lines
-  for (let i =0; i < 50 && star.neighbours.length <= 3; i+=1) {
-    if (stars[j] != star && distance(stars[j], star) < DIST_LIMIT) { // TODO check equality
-      star.neighbours.push(stars[j])
+  
+  let supercount = 0;
+
+  for (let i = stars.length-1; i >=0 && star.neighbours.length < 4 && (stars[i].neighbours.length < 2 || (supercount <= 0 && stars[i].neighbours.length < 3)); i-=1) {
+    
+    if (stars[i] != star && distance(stars[i], star) < DIST_LIMIT) { // TODO check equality
+      star.neighbours.push(stars[i])
+      stars[i].neighbours.push(star)
     }
 
-  }
-  
+
+    if (stars[i].neighbours.length >= 2) {
+      supercount += 1;
+    }
+  } 
 }
 
 let circles = []
@@ -73,9 +78,13 @@ function printMousePos(event) {
     newStar(x, y)
 }
 
+function distrFunc(n) {
+  return 1/(1+Math.exp((-8)*(n-0.5)))
+}
+
 function randomStar() {
   if (stars.length >= 5) {
-    newStar(Math.floor(Math.random()*(window.innerWidth)), Math.floor(Math.random()*(window.innerHeight)));
+    newStar(Math.floor(distrFunc(Math.random())*(window.innerWidth)), Math.floor(Math.random()*(window.innerHeight)));
   }
   
 }
@@ -110,52 +119,61 @@ function draw() {
     }
 
     stars.forEach(function(item, index, arr) {
-        ctx.globalAlpha = item.alpha
-      
 
+      if (item.r > 0.5) {
         // DRAW LINES
         item.neighbours.forEach(function(s, index, arr) {
+          ctx.globalAlpha = item.alpha
+          ctx.beginPath();
+          ctx.moveTo(item.x*ctx.canvas.width, item.y*ctx.canvas.height);
+          ctx.lineTo(s.x*ctx.canvas.width, s.y*ctx.canvas.height);
+          ctx.strokeStyle = "#e2ce80"
+          ctx.stroke();
+          ctx.closePath();
+          ctx.globalAlpha = 1
+        })
+  
+        // DRAW STAR
         ctx.beginPath();
-        ctx.moveTo(item.x*ctx.canvas.width, item.y*ctx.canvas.height);
-        ctx.lineTo(s.x*ctx.canvas.width, s.y*ctx.canvas.height);
-        ctx.strokeStyle = "#e2ce80"
-        ctx.stroke();
-        ctx.closePath();
-        ctx.globalAlpha = 1
-      })
-
-      // DRAW STAR
-      ctx.beginPath();
-      ctx.globalAlpha = item.alpha
-
-      deviationX = 0.5 - item.x;
-      deviationY = 0.5 - item.y;
-
-      ctx.arc(item.x*ctx.canvas.width, item.y*ctx.canvas.height, item.r, 0, 2 * Math.PI);
-      ctx.fillStyle = item.colour;
-      ctx.fill();
-
-      item.alpha += 0.01
-
-      ctx.globalAlpha = 1
-      ctx.closePath();
-
-      if (stars.length >= 5) {
-        // CHANGE VALUES
+        ctx.globalAlpha = item.alpha
+  
         deviationX = 0.5 - item.x;
         deviationY = 0.5 - item.y;
-
-        SPEEDFACTOR = 10
-
-        deviationX /= (10000/SPEEDFACTOR);
-        deviationY /= (10000/SPEEDFACTOR);
-
-        item.x += deviationX;
-        item.y += deviationY;
-        item.r *= 0.999
-        item.z += 0.0001 // effective change in z to prevent connections
+  
+        ctx.arc(item.x*ctx.canvas.width, item.y*ctx.canvas.height, item.r, 0, 2 * Math.PI);
+        ctx.fillStyle = item.colour;
+        ctx.fill();
+  
+        if (item.alpha < 1) {
+          item.alpha += 0.01
+        }
+        
+  
+        ctx.globalAlpha = 1
+        ctx.closePath();
+  
+        if (stars.length >= 5) {
+          // CHANGE VALUES
+          deviationX = 0.5 - item.x;
+          deviationY = 0.5 - item.y;
+  
+          SPEEDFACTOR = 5
+  
+          deviationX /= (10000/SPEEDFACTOR);
+          deviationY /= (10000/SPEEDFACTOR);
+  
+          item.x += deviationX;
+          item.y += deviationY;
+          item.r *= 0.9995
+  
+          if (item.r < 0.1) {
+            stars.r
+          }
+       }
       }
-      
+      else{
+        item.alpha *= 0.9;
+      }     
 
     })
 
