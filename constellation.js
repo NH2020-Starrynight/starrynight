@@ -110,15 +110,18 @@ function draw() {
     }
 
     stars.forEach(function(item, index, arr) {
+        ctx.globalAlpha = item.alpha
+      
 
-      // DRAW LINES
-      item.neighbours.forEach(function(s, index, arr) {
+        // DRAW LINES
+        item.neighbours.forEach(function(s, index, arr) {
         ctx.beginPath();
         ctx.moveTo(item.x*ctx.canvas.width, item.y*ctx.canvas.height);
         ctx.lineTo(s.x*ctx.canvas.width, s.y*ctx.canvas.height);
         ctx.strokeStyle = "#e2ce80"
         ctx.stroke();
         ctx.closePath();
+        ctx.globalAlpha = 1
       })
 
       // DRAW STAR
