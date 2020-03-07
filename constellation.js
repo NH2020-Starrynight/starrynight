@@ -6,8 +6,14 @@ var canvas = document.getElementById('nightSky');
 // Obtain a graphics context on the canvas element for drawing.
 var ctx = canvas.getContext('2d');
 
+var START_AMOUNT = 7;
+
+var TEXT_ALPHA = 1;
+
 ctx.canvas.width  = window.innerWidth;
 ctx.canvas.height = window.innerHeight;
+
+frameNumber = 0;
 
 function distance(s1, s2) {
   return Math.sqrt(Math.pow(s2.x-s1.x, 2) + Math.pow(s2.y-s1.y, 2))
@@ -37,15 +43,14 @@ function LocatorCircle(r) {
 LocatorCircle.prototype.constructor = LocatorCircle();
 
 function chooseColour() {
-  let colours = ["#e9e9e9", "#b6d3e9", "#ec8b69"]
+  let colours = ["#e9e9e9", "#b6d3e9", "#ec8b69", "#f6d65a", "#fb5151", "#9ebeff"]
   return (colours[Math.floor(Math.random()*(colours.length+1))])
 }
 
 let stars = []
 
 function populateNeighbours(star) {
-
-  //j = Math.floor(Math.random()*(stars.length))
+  // connect to neighbours
 
   DIST_LIMIT = 0.2;
 
@@ -58,7 +63,6 @@ function populateNeighbours(star) {
       star.neighbours.push(stars[i])
       stars[i].neighbours.push(star)
     }
-
 
     if (stars[i].neighbours.length >= 2) {
       supercount += 1;
@@ -83,26 +87,28 @@ function distrFunc(n) {
 }
 
 function randomStar() {
-  if (stars.length >= 5) {
+  if (stars.length >= START_AMOUNT) {
     newStar(Math.floor(distrFunc(Math.random())*(window.innerWidth)), Math.floor(Math.random()*(window.innerHeight)));
   }
   
 }
 
 function newStar(x, y) {
-  stars.push(new Star(x/window.innerWidth, y/window.innerHeight, 5))
+  stars.push(new Star(x/window.innerWidth, y/window.innerHeight, Math.floor(Math.random()*3)+3))
   populateNeighbours(stars[stars.length-1]);
 }
 
 function locator() {
 
-  if (stars.length >= 5) {
+  if (stars.length >= START_AMOUNT) {
     circles.push(new LocatorCircle(1))
     console.log("circle")
   }
 }
 
 function draw() {
+    frameNumber++;
+
     ctx.canvas.width  = window.innerWidth;
     ctx.canvas.height = window.innerHeight;
     //...drawing code...
@@ -116,10 +122,21 @@ function draw() {
     Debug
     */ 
 
-    if (stars.length < 5) {
-      ctx.font = "40px Roboto";
-      ctx.fillText("Hello World", 10, 50);
+    if (stars.length >= START_AMOUNT && TEXT_ALPHA > 0) {
+      TEXT_ALPHA *= 0.99
     }
+
+    if (TEXT_ALPHA > 0.01) {
+      ctx.globalAlpha = TEXT_ALPHA;
+      ctx.font = "40px Helvetica";
+      ctx.fillStyle = "#ffffff"
+      ctx.fillText("A Starry Night", 10, 50);
+      ctx.font = "20px Helvetica";
+      ctx.fillText("Click to place stars. Place 7 to form a shape, then sit back and watch the show.", 10, 100)
+      ctx.globalAlpha = 1;
+    }
+
+    
 
     stars.forEach(function(item, index, arr) {
 
@@ -152,6 +169,12 @@ function draw() {
   
         deviationX = 0.5 - item.x;
         deviationY = 0.5 - item.y;
+
+        if (frameNumber % 6 == 0 && item.alpha >= 1) {
+          if(Math.random() > 0.5) {
+            item.alpha = 0.75
+          }
+        }
   
         ctx.arc(item.x*ctx.canvas.width, item.y*ctx.canvas.height, item.r, 0, 2 * Math.PI);
         ctx.fillStyle = item.colour;
@@ -165,7 +188,7 @@ function draw() {
         ctx.globalAlpha = 1
         ctx.closePath();
   
-        if (stars.length >= 5) {
+        if (stars.length >= START_AMOUNT) {
           // CHANGE VALUES
           deviationX = 0.5 - item.x;
           deviationY = 0.5 - item.y;
@@ -185,7 +208,7 @@ function draw() {
        }
       }
       else{
-        item.alpha *= 0.99;
+        item.alpha *= 0.999;
       }     
 
     })
