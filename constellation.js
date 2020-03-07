@@ -95,8 +95,11 @@ function newStar(x, y) {
 }
 
 function locator() {
-  circles.push(new LocatorCircle(1))
-  
+
+  if (stars.length >= 5) {
+    circles.push(new LocatorCircle(1))
+    console.log("circle")
+  }
 }
 
 function draw() {
@@ -123,12 +126,22 @@ function draw() {
       if (item.r > 0.5) {
         // DRAW LINES
         item.neighbours.forEach(function(s, index, arr) {
-          ctx.globalAlpha = item.alpha
+
+          if (s.alpha < item.alpha) {
+            ctx.globalAlpha = s.alpha
+          }
+          else{
+            ctx.globalAlpha = item.alpha
+          }
           ctx.beginPath();
           ctx.moveTo(item.x*ctx.canvas.width, item.y*ctx.canvas.height);
           ctx.lineTo(s.x*ctx.canvas.width, s.y*ctx.canvas.height);
-          ctx.strokeStyle = "#e2ce80"
+          
+          ctx.strokeStyle = "#f2e3aa"
+          ctx.lineWidth = 1;
+
           ctx.stroke();
+          
           ctx.closePath();
           ctx.globalAlpha = 1
         })
@@ -145,7 +158,7 @@ function draw() {
         ctx.fill();
   
         if (item.alpha < 1) {
-          item.alpha += 0.01
+          item.alpha += 0.005
         }
         
   
@@ -157,14 +170,14 @@ function draw() {
           deviationX = 0.5 - item.x;
           deviationY = 0.5 - item.y;
   
-          SPEEDFACTOR = 5
+          SPEEDFACTOR = 3
   
           deviationX /= (10000/SPEEDFACTOR);
           deviationY /= (10000/SPEEDFACTOR);
   
           item.x += deviationX;
           item.y += deviationY;
-          item.r *= 0.9995
+          item.r *= 0.9998
   
           if (item.r < 0.1) {
             stars.r
@@ -172,26 +185,28 @@ function draw() {
        }
       }
       else{
-        item.alpha *= 0.9;
+        item.alpha *= 0.99;
       }     
 
     })
-
+    
     circles.forEach(function(item, index, arr) {
-      // DRAW locator
-      ctx.beginPath();
-      ctx.globalAlpha =  0.5
+        // DRAW locator
+        ctx.beginPath();
+        ctx.globalAlpha =  0.5
+  
+        ctx.arc(0.5*ctx.canvas.width, 0.5*ctx.canvas.height, item.r*canvas.height, 0, 2 * Math.PI);
+  
+        ctx.strokeStyle = "#FFFFFF";
+        ctx.stroke();
+  
+        item.r *= 0.9998
+  
+        ctx.globalAlpha = 1
+        ctx.closePath();  
+      })
 
-      ctx.arc(0.5*ctx.canvas.width, 0.5*ctx.canvas.height, item.r*canvas.height, 0, 2 * Math.PI);
-
-      ctx.strokeStyle = "#FFFFFF";
-      ctx.stroke();
-
-      item.r *= 0.999
-
-      ctx.globalAlpha = 1
-      ctx.closePath();  
-    })
+    
   
   }
 
@@ -201,9 +216,7 @@ function draw() {
   setInterval(randomStar, 500);
   // star generator
 
-  
-
-  //setInterval(locator, 6000)
+  setInterval(locator, 12000)
 
   document.addEventListener("click", printMousePos); // add event
 
