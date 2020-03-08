@@ -57,7 +57,7 @@ function populateNeighbours(star) {
   
   let supercount = 0;
 
-  for (let i = stars.length-1; i >=0 && star.neighbours.length < 4 && (stars[i].neighbours.length < 2 || (supercount <= 0 && stars[i].neighbours.length < 3)); i-=1) {
+  for (let i = stars.length-1; i >=0 && star.neighbours.length < 4 && (stars[i].neighbours.length < 2 || (supercount <= 1 && stars[i].neighbours.length < 3)); i-=1) {
     
     if (stars[i] != star && distance(stars[i], star) < DIST_LIMIT) { // TODO check equality
       star.neighbours.push(stars[i])
@@ -75,10 +75,14 @@ let circles = []
 let paths = []
 
 
-function printMousePos(event) {
+function click(event) {
     x = event.clientX;
     y = event.clientY;
-
+    if(stars.length == 0) {
+      var audio = new Audio('Interstellar Theme.mp3');
+      audio.play();
+    }
+    
     newStar(x, y)
 }
 
@@ -126,13 +130,28 @@ function draw() {
       TEXT_ALPHA *= 0.99
     }
 
+    var txt = ""
+
+    if (stars.length == 0) {
+      txt = "Click to place stars. Place down 7 stars, then sit back and watch the show."
+    }
+    else if (stars.length < START_AMOUNT){
+      txt = "Place down " + (START_AMOUNT - stars.length) + " more star(s), then sit back and enjoy the show."
+    }
+    else {
+      txt = "Sit back, and enjoy the show."
+    }
+
     if (TEXT_ALPHA > 0.01) {
       ctx.globalAlpha = TEXT_ALPHA;
-      ctx.font = "40px Helvetica";
+      ctx.font = "60px Immortal";
       ctx.fillStyle = "#ffffff"
-      ctx.fillText("A Starry Night", 10, 50);
-      ctx.font = "20px Helvetica";
-      ctx.fillText("Click to place stars. Place 7 to form a shape, then sit back and watch the show.", 10, 100)
+      ctx.fillText("A Starry Night", 10, 70);
+      ctx.font = "15px Immortal";
+      ctx.fillText("A project by Tony Chung, Shahriyar Habib, Don Min, and Mingde Yin", 10, 110)
+      ctx.font = "20px Immortal";
+      ctx.fillText(txt, 10, 150)
+      ctx.fillText("You can continue to place more stars simply by clicking.", 10, 170)
       ctx.globalAlpha = 1;
     }
 
@@ -241,6 +260,6 @@ function draw() {
 
   setInterval(locator, 12000)
 
-  document.addEventListener("click", printMousePos); // add event
+  document.addEventListener("click", click); // add event
 
   
